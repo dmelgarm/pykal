@@ -177,7 +177,7 @@ def kalmans(td,d,ta,a,dtd,dta,q,r):
     
     
 
-def kaldaz(td,d,ta,a,dtd,dta,q,rd,ra):
+def kaldaz(td,d,ta,a,dtd,dta,qa,qomega,rd,ra):
     '''
     Use GPS and acceleroemer as measurements. This approach is in contrast
     to the original one in Bock et al (2011,BSSA) where we treated acceleration
@@ -186,7 +186,26 @@ def kaldaz(td,d,ta,a,dtd,dta,q,rd,ra):
     estimate the DC offset itself.
     
     Usage:
-        dout,vout,aout,DC = kaldaz(d,a,dtd,dta)
+        dout,vout,aout,DC = kaldaz(d,a,dtd,dta,qomega,qa,rd,ra)
+        
+        td - Time vector for displacements
+        d - Dispalcement time series
+        ta - Time vector for accelerations
+        a - Acceleration tiem series
+        dtd - Displacement sampling rate
+        dta - Accelerometer sampling rate
+        qa - Acceleration system noise
+        qomega - DC offset system noise
+        rd - Displacement measurement noise
+        ra - Acceleration measurement noise
+        
+        Returns tk,dk,vk,ak,Ok
+        
+        tk - Kalman fitlered tiem vector
+        dk - Filtered dispalcement
+        vk - Filtered velocity
+        ak - Filtered acceleration
+        Ok - Filtered DC offset
         
     '''
     
@@ -199,6 +218,8 @@ def kaldaz(td,d,ta,a,dtd,dta,q,rd,ra):
     Ok=np.zeros(ta.shape)
     #Initalize system states
     x=np.zeros((4,))[None].T
+    x[0]=d[0]
+    x[3]=a[0]
     #Initalize covariance
     P=np.eye(4)
     #Define measurement matrices
@@ -209,10 +230,11 @@ def kaldaz(td,d,ta,a,dtd,dta,q,rd,ra):
     kd=0
     for ka in range(len(a)):
         #Time update
-        Q=np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,(1+dta)*q[ka]*dta]])
+        #Q=np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,(1+dta)*q[ka]*dta]])
+        Q=np.array([[0,0,0,0],[0,0,0,0],[0.25*(dta**4*qa[ka]**2),0.5*(dta**3*qa[ka]**2),dta**2*qa[ka]**2+dta*qa[ka],0],[0,0,0,(1+dta)*qomega[ka]*dta]])
         #Predict state
         x=np.dot(A,x)
-        #Predict covariance
+        #Predict covarian
         P=np.dot(A,np.dot(P,A.T))+Q
         #Measurememt update (GPS+accel)
         if np.allclose(ta[ka]-td[kd],0):  #GPS available

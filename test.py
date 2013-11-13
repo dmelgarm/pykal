@@ -55,14 +55,20 @@ Kq=1
 q=np.var(a[0:1000])*Kq
 q=np.ones(ta.shape)*q
 r=np.ones(td.shape)*r
-qomega=1e-19
+qomega=1e-15
 qomega=np.ones(ta.shape)*qomega
+qa=6e-1
+qa=np.ones(ta.shape)*qa
 #tk,dk,vk=pykal.kalmans(td,n,ta,a-np.mean(a[0:500]),dtd,dta,q,r)
-tk,dk,vk,ak,Ok=pykal.kaldaz(td,n,ta,a,dtd,dta,q=qomega,rd=r,ra=q)
+tk,dk,vk,ak,Ok=pykal.kaldaz(td,n,ta,a,dtd,dta,qa,qomega,rd=r,ra=q)
 
-pl.close("all")
+pl.figure()
+pl.subplot(211)
 pl.scatter(td,n,color='blue')
 pl.plot(tk,dk)
+pl.grid()
+pl.subplot(212)
+pl.plot(tk,ak,tk,Ok)
 #pl.legend(['GPS','Kalman'])
 pl.grid()
 pl.show()
