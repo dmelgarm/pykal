@@ -1,4 +1,4 @@
-import obspy,pykal
+import pykal
 import numpy as np
 import matplotlib.pyplot as pl
 
@@ -34,28 +34,35 @@ hr=gps['hr'][i]
 mi=gps['min'][i]
 se=gps['sec'][i]
 #Make time vector
-tg=hr*3600+mi*60+se
+td=hr*3600+mi*60+se
 #Rotate to latlon
 n,e,u=pykal.xyz2neu(x,y,z,lat,lon)
+#Get channel variance
+r=np.var(n[0:500])
 
 #Now trim them
-i1=np.nonzero(tg>ta[0])[0]
-i2=np.nonzero(tg<ta[-1])[0]
+i1=np.nonzero(td>ta[0])[0]
+i2=np.nonzero(td<ta[-1])[0]
 i=np.intersect1d(i1,i2)
-tg=tg[i]
-dtg=1
+td=td[i]
+dtd=1
 n=n[i]
 e=e[i]
 u=u[i]
 
 #Run filter
 Kq=1
-q=np.var(a[0:15*100])*Kq
-r=np.var(n[0:15])
+q=np.var(a[0:1000])*Kq
 q=np.ones(ta.shape)*q
-r=np.ones(tg.shape)*r
-tk,dk,vk=pykal.kalmand(tg,n,ta,a-np.mean(a),dtg,dta,q,r)
+r=np.ones(td.shape)*r
+qomega=1e-19
+qomega=np.ones(ta.shape)*qomega
+#tk,dk,vk=pykal.kalmans(td,n,ta,a-np.mean(a[0:500]),dtd,dta,q,r)
+tk,dk,vk,ak,Ok=pykal.kaldaz(td,n,ta,a,dtd,dta,q=qomega,rd=r,ra=q)
 
 pl.close("all")
-pl.plot(tg,n,tk,dk)
+pl.scatter(td,n,color='blue')
+pl.plot(tk,dk)
+#pl.legend(['GPS','Kalman'])
+pl.grid()
 pl.show()
