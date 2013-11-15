@@ -72,13 +72,13 @@
 %	PROBLEM 1
 %----------------------------------------------------------------------------------------
 
-\section{}
+\section{Filter Formulation}
 
-The problem is to modify the Kalman filtered from \textit{Bock et al.} (2011) to a filter that can ingest acceleroemter data with a constant DC offset. That is the measured or observed acceleration $a^{obs}$ is related to the true acceleration, $a^{true}$ by
+The problem is to modify the Kalman filtered from \textit{Bock et al.} (2011) to a filter that can ingest accelerometer data with a constant DC offset. That is the measured or observed acceleration $a^{obs}$ is related to the true acceleration, $a^{true}$ by
 $$
 a_k^{true}=a_k^{obs}-\Omega_k+\epsilon_a
 $$
-where $\Omega_k$ is the DC offset at epoch $k$ and $\epsilon_a$ is the accelerometer noise. If we define our system states as the dispalcement $d$, the velocity $v$ and the DC offset $\Omega$ then following \textit{Lewis et al.} (2008) section 2.4 we can write the continuos difference equation for this system:
+where $\Omega_k$ is the DC offset at epoch $k$ and $\epsilon_a$ is the accelerometer noise. If we define our system states as the displacement $d$, the velocity $v$ and the DC offset $\Omega$ then following \textit{Lewis et al.} (2008) section 2.4 we can write the continuous difference equation for this system:
 $$
 \frac{d}{dt}
 \left[\begin{matrix}
@@ -141,64 +141,46 @@ If we are measuring noisy displacements we define the measurement process:
 $$
 z(t)=d^{obs}(t)=\mathbf{H}(t)\mathbf{x}(t)+\eta_d=
 \left[\begin{matrix}
- 1 & 0
+ 1 & 0 & 0
 \end{matrix}\right]\mathbf{x}(t)+\eta_d
 $$
-where $\eta_d$ is the displacement observation noise, which when assumed gaussian has a dsitribution $\mathbf{\eta_d}\sim(0,\mathbf{R})$ with $\mathbf{R}=\sigma_d$ the displacement noise variance. The continuos system can now be discretized. Again following \textit{Lewis et al.}(2008), we write the discrete system:
+where $\eta_d$ is the displacement observation noise, which when assumed gaussian has a distribution $\mathbf{\eta_d}\sim(0,\mathbf{R})$ with $\mathbf{R}=\sigma_d$ the displacement noise variance. The continuous system can now be discretized. Again following \textit{Lewis et al.}(2008), we write the discrete system:
 $$
 \mathbf{x}_{k+1}=\mathbf{A}^s\mathbf{x}_k+\mathbf{B}^sa^{obs}_k+\epsilon_k
 $$
-where the discretized noise vector is gaussian and disitrbuted like $\epsilon_k\sim(0,\mathbf{Q}^s)$. The discretized or sampled version of the system matrices (\textit{Lewis et al.}, 2008) are obtained from the MacLaurin series expansion of the integral forms as:
+where the discretized noise vector is Gaussian and distributed like $\epsilon_k\sim(0,\mathbf{Q}^s)$. If we discretize the continuous system at the sampling rate $\tau_a$ of the accelerometer we must redefine the system transition matrices. These are obtained (\textit{Lewis et al.}, 2008) from the MacLaurin series expansion of the integral forms as:
 $$
-\mathbf{A}^s=\mathbf{I}+\mathbf{A}\tau_a+\frac{\mathbf{A}^2\tau^2}{2} \;;\;
-\mathbf{B}^s=\mathbf{B}\tau_a+\frac{\mathbf{A}\mathbf{B}\tau_a^2}{2} \;;\;
-\mathbf{Q}^s=\mathbf{Q}\tau_a+\frac{1}{2}(\mathbf{AQ}+\mathbf{QA}^T)\tau_a^2+\frac{1}{3}\mathbf{AQA}^T\tau^3_a
+\mathbf{A}^s=\mathbf{I}+\mathbf{A}\tau_a+\frac{\mathbf{A}^2\tau^2}{2}=\left[\begin{matrix}
+1 & \tau_a & -\tau_a^2/2 \\
+0 & 1 & -\tau_a \\
+0 & 0 & 1 \end{matrix}\right]\;;
 $$
-\subsection{Heading on level 2 (subsection)}
+$$
+\mathbf{B}^s=\mathbf{B}\tau_a+\frac{\mathbf{A}\mathbf{B}\tau_a^2}{2}=\left[\begin{matrix}
+\tau^2_a/2 \\
+\tau_a \\
+0 \end{matrix}\right]\;;
+$$
+$$
+\mathbf{Q}^s=\mathbf{Q}\tau_a+\frac{1}{2}(\mathbf{AQ}+\mathbf{QA}^T)\tau_a^2+\frac{1}{3}\mathbf{AQA}^T\tau^3_a=\left[\begin{matrix}
+\sigma_a\tau_a^3/3 & \sigma_a\tau_a^2/2 & 0 \\
+\sigma_a\tau_a^2/2 & \sigma_a\tau_a+\sigma_\Omega\tau_a^3/3 & -\sigma_\Omega\tau_a^2/2 \\
+0 & -\sigma_\Omega\tau_a^2/2 & \sigma_\Omega\tau_a \end{matrix}\right]\;.
+$$
+The sampled version of the continuous measurement is written as:
+$$
+z_k=d^{obs}_k=\mathbf{H}^s\mathbf{x}_k+\eta_d\;,
+$$
+where the noise is is white and Gaussian such that $\eta_d\sim(0,R^s)$. Sampling at the rate of the GPS, $\tau_d$ the discretized matrices are simply:
+$$
+\mathbf{H}^s=\mathbf{H}=\left[\begin{matrix}
+ 1 & 0 & 0
+\end{matrix}\right]
+$$
+$$
+R^s=\sigma_d/\tau_d\;.
+$$
+With these definitions the traditional system update and measurement update stages of the Kalman filter can be carried out.
 
-
-
-%------------------------------------------------
-
-\subsubsection{Heading on level 3 (subsubsection)}
-
-\lipsum[3] % Dummy text
-
-\paragraph{Heading on level 4 (paragraph)}
-
-\lipsum[6] % Dummy text
-
-%----------------------------------------------------------------------------------------
-%	PROBLEM 2
-%----------------------------------------------------------------------------------------
-
-\section{Lists}
-
-%------------------------------------------------
-
-\subsection{Example of list (3*itemize)}
-\begin{itemize}
-	\item First item in a list 
-		\begin{itemize}
-		\item First item in a list 
-			\begin{itemize}
-			\item First item in a list 
-			\item Second item in a list 
-			\end{itemize}
-		\item Second item in a list 
-		\end{itemize}
-	\item Second item in a list 
-\end{itemize}
-
-%------------------------------------------------
-
-\subsection{Example of list (enumerate)}
-\begin{enumerate}
-\item First item in a list 
-\item Second item in a list 
-\item Third item in a list
-\end{enumerate}
-
-%----------------------------------------------------------------------------------------
-
+\section{An Example}
 \end{document}

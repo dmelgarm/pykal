@@ -5,7 +5,7 @@ import matplotlib.pyplot as pl
 
 
 #Accelerometer CI WES HNN 2010/04/04,22:40:32.849 1270420832.849     0.010000
-afile='/Users/dmelgarm/Research/Events/14607652/14607652.CI.WES.HNN.ascii'
+afile='/Users/dmelgarm/Documents/Research/Events/14607652/14607652.CI.WES.HNN.ascii'
 a=np.loadtxt(afile)
 a=a/100
 ta=np.arange(len(a))*0.01+(22*3600)+(40*60)+32.85+15
@@ -17,7 +17,7 @@ lon=-115.73206681
 lat=32.75965554
 z=39.48
 #Files
-gpsfile='/Users/dmelgarm/Research/Events/GPS/EMC_GNPS_fix_2010_04_04.txt'
+gpsfile='/Users/dmelgarm/Documents/Research/Events/GPS/EMC_GNPS_fix_2010_04_04.txt'
 ftype=np.dtype([('station','S4'),('x',float),('y',float),('z',float),('yr',int),
     ('month',int),('day',int),('hr',int),('min',int),('sec',int)])
 #Load data
@@ -55,12 +55,14 @@ Kq=1
 q=np.var(a[0:1000])*Kq
 q=np.ones(ta.shape)*q
 r=np.ones(td.shape)*r
-qomega=1e-15
+qomega=1e-3
 qomega=np.ones(ta.shape)*qomega
 qa=6e-1
 qa=np.ones(ta.shape)*qa
 #tk,dk,vk=pykal.kalmans(td,n,ta,a-np.mean(a[0:500]),dtd,dta,q,r)
-tk,dk,vk,ak,Ok=pykal.kaldaz(td,n,ta,a,dtd,dta,qa,qomega,rd=r,ra=q)
+#tk,dk,vk,ak,Ok=pykal.kaldaz(td,n,ta,a,dtd,dta,qa,qomega,rd=r,ra=q)
+tk,dk,vk,Ok=pykal.kaldau(td,n,ta,a,dtd,dta,q,qomega,r)
+ak=a-Ok
 
 pl.figure()
 pl.subplot(211)

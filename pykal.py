@@ -174,7 +174,79 @@ def kalmans(td,d,ta,a,dtd,dta,q,r):
     return tk,dk,vk  
     
     
+def kaldau(td,d,ta,a,dtd,dta,qa,qomega,r):
+    '''
+    A reformulation of the classic filter. Still Use GPS as a measurements. But
+    Introduce a new state variable, omega, the DC offset in the acceleration 
+    time series and estimate it epoch by epoch. This is better or real-time 
+    because you do not need to remove pre-event means
     
+    Usage:
+        tk,dk,vk,Ok = kaldau(d,a,dtd,dta,qa,qomega,r)
+        
+        td - Time vector for displacements
+        d - Dispalcement time series
+        ta - Time vector for accelerations
+        a - Acceleration tiem series
+        dtd - Displacement sampling rate
+        dta - Accelerometer sampling rate
+        qa - Acceleration system noise
+        qomega - DC offset system noise
+        r - Displacement measurement noise
+        
+        Returns tk,dk,Ok
+        
+        tk - Kalman fitlered tiem vector
+        dk - Filtered dispalcement
+        vk - Filtered velocity
+        Ok - Filtered DC offset
+        
+    '''  
+    import numpy as np
+    #Initalize outputs
+    tk=np.zeros(ta.shape)
+    vk=np.zeros(ta.shape)
+    dk=np.zeros(ta.shape)
+    Ok=np.zeros(ta.shape)
+    #Initalize system states
+    x=np.zeros((3,1))
+    x[0]=d[0]
+    x[2]=a[0]
+    #Initalize covariance
+    P=np.zeros(3)
+    #Define measurement matrix and state transition matrices
+    H=np.array([1,0,0])[None]
+    A=np.array([[1,dta,-dta**2/2],[0,1,-dta],[0,0,1]])
+    B=np.array([[0.5*(dta**2)],[dta],[0]])
+    kd=0
+    for ka in range(len(a)):
+        #Time update
+        Q=np.array([[(1/3)*qa[ka]*dta**3,0.5*qa[ka]*dta**2,0],
+            [0.5*qa[ka]*dta**2,qa[ka]*dta+qomega[ka]*dta**3/3,-qomega[ka]*dta**2/2],
+            [0,-qomega[ka]*dta**2/2,qomega[ka]*dta]])
+        #Predict state
+        x=np.dot(A,x)+np.dot(B,a[ka])
+        #Predict covariance
+        P=np.dot(A,np.dot(P,A.T))+Q
+        #Measurememt update
+        if np.allclose(ta[ka]-td[kd],0):  #GPS available
+            R=r[kd]/dtd
+            #Compute filter gain
+            K=np.dot(np.dot(P,H.transpose()),np.linalg.inv(np.dot(H,np.dot(P,H.transpose()))+R))
+            #Update state
+            x=x+np.dot(K,d[kd]-np.dot(H,x))
+            #Update covariance
+            P=np.dot(np.eye(3)-np.dot(K,H),P)
+            kd=kd+1
+            if kd>=d.shape[0]:
+                kd=kd-1
+        #Update output
+        tk[ka]=ta[ka]
+        dk[ka]=x[0]
+        vk[ka]=x[1]
+        Ok[ka]=x[2]
+    print "--> "+str(kd)+" measurement updates in Kalman filter"
+    return tk,dk,vk,Ok
     
 
 def kaldaz(td,d,ta,a,dtd,dta,qa,qomega,rd,ra):
