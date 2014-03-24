@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  14 NOV 2013 21:38
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  18 NOV 2013 13:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -520,7 +520,7 @@ pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/fourier/fourier-mlit
 pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/adobe/utopia/putb8a.pfb></u
 sr/local/texlive/2013/texmf-dist/fonts/type1/adobe/utopia/putr8a.pfb></usr/loca
 l/texlive/2013/texmf-dist/fonts/type1/adobe/utopia/putri8a.pfb>
-Output written on kalman_adc.pdf (2 pages, 59395 bytes).
+Output written on kalman_adc.pdf (2 pages, 59087 bytes).
 PDF statistics:
  40 PDF objects out of 1000 (max. 8388607)
  28 compressed objects within 1 object stream
